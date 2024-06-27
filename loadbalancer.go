@@ -1,14 +1,12 @@
-package server
+package loadbalancer
 
 import (
 	"log"
 	"net/http"
-
-	"github.com/LarsNieuwenhuizen/loadbalancer/pkg/config"
 )
 
 var (
-	Configuration     = config.Setup()
+	Configuration     = Setup()
 	chosenServerIndex = 0
 )
 
@@ -17,10 +15,10 @@ func StartLoadBalancer() {
 	if !Configuration.InProduction {
 		startBackendServers()
 	}
-	http.ListenAndServe(Configuration.LoadBalancerPort, http.HandlerFunc(ProxyHandler))
+	http.ListenAndServe(Configuration.LoadBalancerPort, http.HandlerFunc(proxyHandler))
 }
 
-func ProxyHandler(w http.ResponseWriter, r *http.Request) {
+func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Load balancer received request")
 	log.Println(
 		"Proxying request to backend server",
@@ -38,9 +36,9 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 
 func decideNextServerIndex() {
 	switch Configuration.SchedulingAlgorithm {
-	case config.AllowedSchedulingAlgorithms["round-robin"]:
+	case AllowedSchedulingAlgorithms["round-robin"]:
 		roundRobinDecider()
-	case config.AllowedSchedulingAlgorithms["least-connections"]:
+	case AllowedSchedulingAlgorithms["least-connections"]:
 		// TODO: Implement least connections algorithm
 		// leastConnections()
 	}
