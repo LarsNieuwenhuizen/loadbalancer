@@ -3,6 +3,9 @@ package loadbalancer
 import (
 	"errors"
 	"log"
+	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -12,6 +15,7 @@ var (
 	}
 	configuration = AppConfig{
 		InProduction:        false,
+		StartGivenServers:   false,
 		LoadBalancerPort:    ":8080",
 		SchedulingAlgorithm: AllowedSchedulingAlgorithms["round-robin"],
 		BackendServers:      map[int]string{},
@@ -24,6 +28,7 @@ type AppConfig struct {
 	BackendServers      map[int]string
 	SchedulingAlgorithm string
 	InProduction        bool
+	StartGivenServers   bool
 }
 
 // UseRoundRobinSchedulingAlgorithm sets the scheduling algorithm to round robin.
@@ -69,4 +74,42 @@ func (a *AppConfig) SetBackendServers(servers map[int]string) {
 		return
 	}
 	a.BackendServers = servers
+}
+
+// LoadFromYaml loads the configuration from a given yaml file.
+func (a *AppConfig) LoadFromYaml(filepath string) {
+	data, err := os.ReadFile(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	type LoadBalancerData struct {
+		Port                string   `yaml:"port"`
+		SchedulingAlgorithm string   `yaml:"schedulingAlgorithm"`
+		StartGivenServers   bool     `yaml:"startGivenServers"`
+		BackendServers      []string `yaml:"backendServers"`
+		InProduction        bool     `yaml:"inProduction"`
+	}
+
+	type Data struct {
+		LoadBalancer LoadBalancerData `yaml:"loadbalancer"`
+	}
+
+	var structData Data
+
+	err = yaml.Unmarshal(data, &structData)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(structData.LoadBalancer.BackendServers) > 0 {
+		for i, server := range structData.LoadBalancer.BackendServers {
+			a.BackendServers[i] = server
+		}
+	}
+
+	a.InProduction = structData.LoadBalancer.InProduction
+	a.LoadBalancerPort = ":" + structData.LoadBalancer.Port
+	a.SchedulingAlgorithm = structData.LoadBalancer.SchedulingAlgorithm
+	a.StartGivenServers = structData.LoadBalancer.StartGivenServers
 }

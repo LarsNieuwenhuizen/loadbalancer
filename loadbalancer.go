@@ -1,6 +1,7 @@
 package loadbalancer
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
@@ -11,8 +12,16 @@ var (
 )
 
 func Start() {
+	path := flag.String("config", "", "Path to the configuration file")
+	flag.Parse()
+	if *path == "" {
+		log.Fatal("Please provide the path as a command line argument")
+	}
+
+	Configuration.LoadFromYaml(*path)
+
 	log.Println("Starting load balancer on port", Configuration.LoadBalancerPort)
-	if !Configuration.InProduction {
+	if !Configuration.InProduction && Configuration.StartGivenServers {
 		startBackendServers()
 	}
 	http.ListenAndServe(Configuration.LoadBalancerPort, http.HandlerFunc(proxyHandler))
