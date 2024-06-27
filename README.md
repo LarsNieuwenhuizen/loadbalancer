@@ -4,28 +4,24 @@ This is a very simple loadbalancer written in Go
 
 ## Usage
 
-The loadbalancer configuration is set by default as following:
-```go
-configuration = AppConfig{
-    InProduction:        false,
-    LoadBalancerPort:    ":8080",
-    SchedulingAlgorithm: AllowedSchedulingAlgorithms["round-robin"],
-    BackendServers:      map[int]string{},
-}
+The loadbalancer simply needs a yaml config file like this:
+
+```yaml
+loadbalancer:
+  inProduction: false
+  backendServers:
+    - "http://localhost:8082"
+    - "http://localhost:8083"
+    - "http://localhost:8090"
+  startGivenServers: true
+  port: 8080
+  schedulingAlgorithm: "round-robin"
 ```
 
-To use it in Go you can do the following
+Download the loadbalancer and run it
 
-```go
-package main
+`./lb --config config.yaml`
 
-import "github.com/LarsNieuwenhuizen/loadbalancer"
-
-func main() {
-	loadbalancer.Configuration.SetBackendServers(map[int]string{})
-	loadbalancer.Start()
-}
-```
-
-The default configuration sets InProduction to `false`
-The setting the backend servers to an empty map the default dummy backend servers will the spinned up so you can test the behaviour
+- The loadbalancer will now start on port 8080
+- It will fire up the webservers as dummy backend servers because we set `startGivenServers` to true
+- It will use the round-robin mode to choose the next server to go to for each request
