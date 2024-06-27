@@ -10,7 +10,7 @@ var (
 	chosenServerIndex = 0
 )
 
-func StartLoadBalancer() {
+func Start() {
 	log.Println("Starting load balancer on port", Configuration.LoadBalancerPort)
 	if !Configuration.InProduction {
 		startBackendServers()

@@ -55,11 +55,11 @@ func Setup() *AppConfig {
  * SetBackendServers sets the backend servers for the load balancer.
  * You can pass a map of server indexes to server addresses.
  * For example, map[0] = "http://localhost:8081", map[1] = "http://localhost:8082".
- * If you are not in production and you pass an empty map, the development backend servers will be used.
+ * If you are not in production and you pass an empty map, the development dummy backend servers will be used.
  */
 func (a *AppConfig) SetBackendServers(servers map[int]string) {
 	if !a.InProduction && len(servers) == 0 {
-		log.Println("Creating", servers)
+		log.Println("Creating dummy backend servers")
 		developmentBackendServers := map[int]string{
 			0: "http://localhost:8081",
 			1: "http://localhost:8082",
