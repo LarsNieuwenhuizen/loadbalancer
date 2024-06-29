@@ -24,7 +24,6 @@ jobs:
       run: go build -o lb cmd/lb.go
 
     - name: Release
-      if: github.ref == 'refs/tags/v*'
       uses: softprops/action-gh-release@v2
       with:
         body: |
