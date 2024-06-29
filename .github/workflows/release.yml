@@ -37,6 +37,6 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
-          # Release ${{ github.ref.name }}
+          # Release notes
           The new version of the loadbalancer has arrived! :rocket:
         files: bin/*.tar.gz

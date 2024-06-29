@@ -33,6 +33,7 @@ Download the one suited for your system, extract the tarball and run it.
 - The loadbalancer will now start on port 8080
 - It will fire up the webservers as dummy backend servers because we set `startGivenServers` to true
 - It will use the round-robin mode to choose the next server to go to for each request
+- Hit http://localhost:8080/ in your browser and you should see a a response from the next backend server on every refresh
 
 ## Loadbalancer algorithms
 
