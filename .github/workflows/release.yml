@@ -30,8 +30,9 @@ jobs:
     - name: Check build
       shell: bash
       run: |
-        ls -al
         ./lb --help
+        tar -czf lb.tar.gz lb
+        ls -al
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -40,4 +41,4 @@ jobs:
         body: |
           # Release ${{ github.ref }}
           The new version of the loadbalancer has arrived! :rocket:
-        # files: lb
+        files: lb.tar.gz
