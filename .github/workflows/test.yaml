@@ -24,4 +24,4 @@ jobs:
         set -o pipefail
         echo "# Testing the loadbalancer :rocket:\n" >> $GITHUB_STEP_SUMMARY
 
-        go run test -v -cover >> $GITHUB_STEP_SUMMARY
+        go test -v -cover >> $GITHUB_STEP_SUMMARY
