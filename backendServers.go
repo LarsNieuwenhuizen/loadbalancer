@@ -34,19 +34,14 @@ func startBackendServers() error {
 }
 
 // startServer starts a dummy backend server
-func startServer(serverPort string, startSignal chan<- bool) error {
+func startServer(serverPort string, startSignal chan<- bool) {
 	startSignal <- true
 
 	log.Println("Starting backend server", serverPort)
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Backend server %s received request", serverPort)
 		w.Write([]byte("Hello from backend server " + serverPort))
-		defer r.Body.Close()
 	})
 
-	if handler != nil {
-		return errors.New("error creating handler")
-	}
-
-	return http.ListenAndServe(serverPort, handler)
+	http.ListenAndServe(serverPort, handler)
 }
