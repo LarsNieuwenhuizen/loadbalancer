@@ -24,21 +24,19 @@ jobs:
       id: go
 
     - name: Build
-      run: go build -o lb cmd/lb.go
-      id: build
+      shell: bash
+      run: ./build.sh
 
-    - name: Check build
+    - name: Check the created tarballs
       shell: bash
       run: |
-        ./lb --help
-        tar -czf lb.tar.gz lb
-        ls -al
+        ls -al bin
 
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
-          # Release ${{ github.ref }}
+          # Release ${{ github.ref.name }}
           The new version of the loadbalancer has arrived! :rocket:
-        files: lb.tar.gz
+        files: bin/*.tar.gz
