@@ -11,8 +11,29 @@ permissions:
   contents: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go 1.22
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.22
+      id: go
+
+    - name: Test
+      shell: bash
+      run: |
+        echo "# Releasing the loadbalancer :rocket:\n" >> $GITHUB_SUMMARY
+        echo "Let first do some testing\n" >> $GITHUB_SUMMARY
+
+        go run test -v -cover >> $GITHUB_SUMMARY
+
   build:
     runs-on: ubuntu-latest
+    needs: test
 
     steps:
     - uses: actions/checkout@v4
@@ -41,3 +62,8 @@ jobs:
           # Release notes
           The new version of the loadbalancer has arrived! :rocket:
         files: bin/*.tar.gz
+
+    - name: Write the release summary
+      shell: bash
+      run: |
+        echo "The release has been successful!" >> $GITHUB_SUMMARY
