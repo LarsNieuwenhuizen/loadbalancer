@@ -26,10 +26,10 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        echo "# Releasing the loadbalancer :rocket:\n" >> $GITHUB_STEP_SUMMARY
-        echo "Let first do some testing\n" >> $GITHUB_STEP_SUMMARY
+        set -o pipefail
+        echo "# Testing the loadbalancer :rocket:" >> $GITHUB_STEP_SUMMARY
 
-        go run test -v -cover >> $GITHUB_STEP_SUMMARY
+        go test -v -cover >> $GITHUB_STEP_SUMMARY
 
   build:
     runs-on: ubuntu-latest

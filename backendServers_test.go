@@ -65,3 +65,7 @@ func TestGoroutineStartsWhenStartingServer(t *testing.T) {
 		t.Error("Timeout waiting for goroutine to start")
 	}
 }
+
+func TestDummyToFailOnPurpose(t *testing.T) {
+	t.Error("This test is supposed to fail")
+}
