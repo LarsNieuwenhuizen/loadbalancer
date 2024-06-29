@@ -1,0 +1,34 @@
+# Build a the loadbalancer binary on a release
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go 1.22
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.22
+      id: go
+
+    - name: Build
+      run: go build -o lb cmd/lb.go
+
+    - name: Release
+      if: github.ref == 'refs/tags/v*'
+      uses: softprops/action-gh-release@v2
+      with:
+        body: |
+          # Release ${{ github.ref }}
+          The new version of the loadbalancer has arrived! :rocket:
+        files: |
+            - lb
