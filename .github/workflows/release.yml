@@ -25,9 +25,13 @@ jobs:
 
     - name: Build
       run: go build -o lb cmd/lb.go
+      id: build
 
     - name: Check build
-      run: ./lb --help
+      shell: bash
+      run: |
+        ls -al
+        ./lb --help
 
     - name: Release
       uses: softprops/action-gh-release@v2
@@ -36,5 +40,4 @@ jobs:
         body: |
           # Release ${{ github.ref }}
           The new version of the loadbalancer has arrived! :rocket:
-        files: |
-            - lb
+        # files: lb
