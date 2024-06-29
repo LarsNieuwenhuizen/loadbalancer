@@ -26,10 +26,10 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        echo "# Releasing the loadbalancer :rocket:\n" >> $GITHUB_SUMMARY
-        echo "Let first do some testing\n" >> $GITHUB_SUMMARY
+        echo "# Releasing the loadbalancer :rocket:\n" >> $GITHUB_STEP_SUMMARY
+        echo "Let first do some testing\n" >> $GITHUB_STEP_SUMMARY
 
-        go run test -v -cover >> $GITHUB_SUMMARY
+        go run test -v -cover >> $GITHUB_STEP_SUMMARY
 
   build:
     runs-on: ubuntu-latest
@@ -66,4 +66,4 @@ jobs:
     - name: Write the release summary
       shell: bash
       run: |
-        echo "The release has been successful!" >> $GITHUB_SUMMARY
+        echo "The release has been successful!" >> $GITHUB_STEP_SUMMARY
