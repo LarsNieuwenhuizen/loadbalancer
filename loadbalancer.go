@@ -49,7 +49,7 @@ func processRequestFromBackend(w http.ResponseWriter, r *http.Request) error {
 	backendServer := Configuration.BackendServers[chosenServerIndex]
 
 	// Create a new request to the backend server
-	backendRequest, err := http.NewRequest(r.Method, backendServer, r.Body)
+	backendRequest, err := http.NewRequest(r.Method, backendServer.Address, r.Body)
 	if err != nil {
 		log.Println("Error creating request to backend server:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

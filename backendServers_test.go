@@ -15,7 +15,14 @@ func TestStartBackendServers(t *testing.T) {
 			name:     "Wrong server address configured to load balance returns an error",
 			expected: ErrInvalidServerAddress,
 			Configuration: AppConfig{
-				BackendServers:    map[int]string{0: "http://localhost", 1: "http://localhost:8081"},
+				BackendServers: map[int]BackendServer{
+					0: {
+						Address: "http://localhost",
+					},
+					1: {
+						Address: "http://localhost:8081",
+					},
+				},
 				LoadBalancerPort:  ":8080",
 				InProduction:      false,
 				StartGivenServers: true,
@@ -25,7 +32,11 @@ func TestStartBackendServers(t *testing.T) {
 			name:     "Start backend servers correctly",
 			expected: nil,
 			Configuration: AppConfig{
-				BackendServers:    map[int]string{0: "http://localhost:8081"},
+				BackendServers: map[int]BackendServer{
+					0: {
+						Address: "http://localhost:8080",
+					},
+				},
 				LoadBalancerPort:  ":8080",
 				InProduction:      false,
 				StartGivenServers: true,
@@ -35,7 +46,7 @@ func TestStartBackendServers(t *testing.T) {
 			name:     "No backend servers configured to load balance returns an error",
 			expected: ErrNoBackendServersConfigured,
 			Configuration: AppConfig{
-				BackendServers:    map[int]string{},
+				BackendServers:    map[int]BackendServer{},
 				LoadBalancerPort:  ":8080",
 				InProduction:      false,
 				StartGivenServers: true,

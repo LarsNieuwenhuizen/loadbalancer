@@ -18,14 +18,14 @@ var (
 		StartGivenServers:   false,
 		LoadBalancerPort:    ":8080",
 		SchedulingAlgorithm: AllowedSchedulingAlgorithms["round-robin"],
-		BackendServers:      map[int]string{},
+		BackendServers:      map[int]BackendServer{},
 	}
 )
 
 // AppConfig holds the configuration for the application.
 type AppConfig struct {
 	LoadBalancerPort    string
-	BackendServers      map[int]string
+	BackendServers      map[int]BackendServer
 	SchedulingAlgorithm string
 	InProduction        bool
 	StartGivenServers   bool
@@ -84,7 +84,10 @@ func (a *AppConfig) LoadFromYaml(filepath string) {
 
 	if len(structData.LoadBalancer.BackendServers) > 0 {
 		for i, server := range structData.LoadBalancer.BackendServers {
-			a.BackendServers[i] = server
+			a.BackendServers[i] = BackendServer{
+				Address:           server,
+				ActiveConnections: 0,
+			}
 		}
 	}
 
