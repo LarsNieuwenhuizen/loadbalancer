@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+type BackendServer struct {
+	Address           string
+	ActiveConnections int
+}
+
 // Custom error
 var (
 	ErrNoBackendServersConfigured = errors.New("no backend servers configured to load balance")
@@ -22,9 +27,9 @@ func startBackendServers() error {
 		return ErrNoBackendServersConfigured
 	}
 	for _, server := range Configuration.BackendServers {
-		serverParts := strings.Split(server, ":")
+		serverParts := strings.Split(server.Address, ":")
 		if len(serverParts) != 3 {
-			log.Println("invalid server address: " + server)
+			log.Println("invalid server address: " + server.Address)
 			return ErrInvalidServerAddress
 		}
 		port := serverParts[2]
