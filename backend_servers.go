@@ -16,37 +16,43 @@ type BackendServer struct {
 
 // Custom error
 var (
-	ErrNoBackendServersConfigured = errors.New("no backend servers configured to load balance")
-	ErrInvalidServerAddress       = errors.New("invalid server address")
+	ErrInvalidServerAddress = errors.New("invalid server address")
 )
 
 // startBackendServers starts the backend servers in separate goroutines
-func startBackendServers() error {
-	if len(Configuration.BackendServers) == 0 {
-		log.Println("no backend servers configured to load balance")
+func (lb *LoadBalancer) startBackendServers() error {
+	if len(lb.Configuration.BackendServers) == 0 {
 		return ErrNoBackendServersConfigured
 	}
-	for _, server := range Configuration.BackendServers {
+
+	for _, server := range lb.Configuration.BackendServers {
 		serverParts := strings.Split(server.Address, ":")
 		if len(serverParts) != 3 {
 			log.Println("invalid server address: " + server.Address)
 			return ErrInvalidServerAddress
 		}
 		port := serverParts[2]
-		go startServer(":"+port, make(chan bool, 1))
+		channel := make(chan bool, 1)
+		go startServer(":"+port, channel)
+		<-channel
+		log.Println("Backend server started on port", port)
+		close(channel)
 	}
 	return nil
 }
 
 // startServer starts a dummy backend server
-func startServer(serverPort string, startSignal chan<- bool) {
+func startServer(serverPort string, startSignal chan<- bool) error {
 	startSignal <- true
 
-	log.Println("Starting backend server", serverPort)
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Backend server %s received request", serverPort)
 		w.Write([]byte("Hello from backend server " + serverPort))
 	})
 
-	http.ListenAndServe(serverPort, handler)
+	err := http.ListenAndServe(serverPort, handler)
+	if err != nil {
+		return err
+	}
+	return nil
 }

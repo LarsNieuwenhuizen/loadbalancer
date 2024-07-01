@@ -56,8 +56,10 @@ func TestStartBackendServers(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			Configuration = &tc.Configuration
-			err := startBackendServers()
+			lb := LoadBalancer{
+				Configuration: &tc.Configuration,
+			}
+			err := lb.startBackendServers()
 			if err != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, err)
 			}

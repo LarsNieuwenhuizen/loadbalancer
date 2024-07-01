@@ -2,7 +2,6 @@ package loadbalancer
 
 import (
 	"errors"
-	"log"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -10,16 +9,14 @@ import (
 
 var (
 	AllowedSchedulingAlgorithms = map[string]string{
-		"round-robin":       "round-robin",
-		"least-connections": "least-connections",
+		"round-robin": "round-robin",
+		// "least-connections": "least-connections", // Not implemented yet
 	}
-	configuration = AppConfig{
-		InProduction:        false,
-		StartGivenServers:   false,
-		LoadBalancerPort:    ":8080",
-		SchedulingAlgorithm: AllowedSchedulingAlgorithms["round-robin"],
-		BackendServers:      map[int]BackendServer{},
-	}
+	ErrCannotLoadYamlFile              = errors.New("cannot load yaml file")
+	ErrNoBackendServersConfigured      = errors.New("no backend servers configured to load balance")
+	ErrNoPortConfigured                = errors.New("port is required in the configuration file")
+	ErrNoSchedulingAlgorithmConfigured = errors.New("scheduling algorithm is required in the configuration file")
+	ErrUnallowedSchedulingAlgorithm    = errors.New("unallowed scheduling algorithm")
 )
 
 // AppConfig holds the configuration for the application.
@@ -31,36 +28,25 @@ type AppConfig struct {
 	StartGivenServers   bool
 }
 
-// UseRoundRobinSchedulingAlgorithm sets the scheduling algorithm to round robin.
-func (a *AppConfig) UseRoundRobinSchedulingAlgorithm() {
-	setSchedulingAlgorithm(AllowedSchedulingAlgorithms["round-robin"], a)
-}
-
-// UseLeastConnectionsSchedulingAlgorithm sets the scheduling algorithm to least connections.
-func (a *AppConfig) UseLeastConnectionsSchedulingAlgorithm() {
-	setSchedulingAlgorithm(AllowedSchedulingAlgorithms["least-connections"], a)
-}
-
 // setSchedulingAlgorithm sets the scheduling algorithm for the load balancer.
-func setSchedulingAlgorithm(algorithm string, a *AppConfig) {
+func (lb *LoadBalancer) SetSchedulingAlgorithm(algorithm string) error {
 	if _, ok := AllowedSchedulingAlgorithms[algorithm]; ok {
-		a.SchedulingAlgorithm = algorithm
-		return
+		lb.Configuration.SchedulingAlgorithm = algorithm
+		return nil
 	}
 
-	log.Fatal(errors.New("invalid scheduling algorithm"))
-}
-
-// Setup sets the configuration for the application.
-func Setup() *AppConfig {
-	return &configuration
+	return ErrUnallowedSchedulingAlgorithm
 }
 
 // LoadFromYaml loads the configuration from a given yaml file.
-func (a *AppConfig) LoadFromYaml(filepath string) {
+func (lb *LoadBalancer) ConfigureFromYaml(filepath string) error {
+	lb.Configuration = &AppConfig{
+		BackendServers: map[int]BackendServer{},
+	}
+
 	data, err := os.ReadFile(filepath)
 	if err != nil {
-		log.Fatal(err)
+		return ErrCannotLoadYamlFile
 	}
 
 	type LoadBalancerData struct {
@@ -79,20 +65,37 @@ func (a *AppConfig) LoadFromYaml(filepath string) {
 
 	err = yaml.Unmarshal(data, &structData)
 	if err != nil {
-		log.Fatal(err)
+		return ErrCannotLoadYamlFile
 	}
 
-	if len(structData.LoadBalancer.BackendServers) > 0 {
-		for i, server := range structData.LoadBalancer.BackendServers {
-			a.BackendServers[i] = BackendServer{
-				Address:           server,
-				ActiveConnections: 0,
-			}
+	if structData.LoadBalancer.Port == "" {
+		return ErrNoPortConfigured
+	}
+
+	if structData.LoadBalancer.SchedulingAlgorithm == "" {
+		return ErrNoSchedulingAlgorithmConfigured
+	}
+
+	if len(structData.LoadBalancer.BackendServers) == 0 {
+		return ErrNoBackendServersConfigured
+	}
+
+	for i, server := range structData.LoadBalancer.BackendServers {
+		lb.Configuration.BackendServers[i] = BackendServer{
+			Address:           server,
+			ActiveConnections: 0,
 		}
 	}
 
-	a.InProduction = structData.LoadBalancer.InProduction
-	a.LoadBalancerPort = ":" + structData.LoadBalancer.Port
-	a.SchedulingAlgorithm = structData.LoadBalancer.SchedulingAlgorithm
-	a.StartGivenServers = structData.LoadBalancer.StartGivenServers
+	lb.NextServer = lb.Configuration.BackendServers[0]
+	lb.Configuration.InProduction = structData.LoadBalancer.InProduction
+	lb.Configuration.LoadBalancerPort = ":" + structData.LoadBalancer.Port
+	lb.Configuration.StartGivenServers = structData.LoadBalancer.StartGivenServers
+
+	err = lb.SetSchedulingAlgorithm(structData.LoadBalancer.SchedulingAlgorithm)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
