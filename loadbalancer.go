@@ -7,49 +7,50 @@ import (
 	"net/http"
 )
 
-var (
-	Configuration     = Setup()
-	chosenServerIndex = 0
-)
+type LoadBalancer struct {
+	Configuration   *AppConfig
+	NextServerIndex int
+	NextServer      BackendServer
+}
 
-func Start() {
+func (lb *LoadBalancer) Start() error {
 	path := flag.String("config", "", "Path to the configuration file")
 	flag.Parse()
 	if *path == "" {
 		log.Fatal("Please provide the path as a command line argument")
 	}
 
-	Configuration.LoadFromYaml(*path)
-
-	log.Println("Starting load balancer on port", Configuration.LoadBalancerPort)
-	if !Configuration.InProduction && Configuration.StartGivenServers {
-		startBackendServers()
+	err := lb.ConfigureFromYaml(*path)
+	if err != nil {
+		return err
 	}
-	http.ListenAndServe(Configuration.LoadBalancerPort, http.HandlerFunc(proxyHandler))
-}
 
-func proxyHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Load balancer received request")
-	log.Println(
-		"Proxying request to backend server",
-		Configuration.BackendServers[chosenServerIndex],
+	log.Println("Starting load balancer on port", lb.Configuration.LoadBalancerPort)
+	if !lb.Configuration.InProduction && lb.Configuration.StartGivenServers {
+		lb.startBackendServers()
+	}
+
+	http.ListenAndServe(
+		lb.Configuration.LoadBalancerPort,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Println("Load balancer received request and passing to a backend server")
+			r.Header.Add("Pass-Through-Host", lb.NextServer.Address)
+			processRequestFromBackend(w, r)
+			lb.decideNextServerIndex()
+		}),
 	)
 
-	err := processRequestFromBackend(w, r)
-	if err != nil {
-		log.Fatal("Error processing request from backend:", err)
-	}
-
-	decideNextServerIndex()
+	return nil
 }
 
 // processRequestFromBackend sends the request to the backend server so we can return the actual response to the client
 func processRequestFromBackend(w http.ResponseWriter, r *http.Request) error {
 	client := &http.Client{}
-	backendServer := Configuration.BackendServers[chosenServerIndex]
+	backendServer := r.Header.Get("Pass-Through-Host")
+	r.Header.Del("Pass-Through-Host")
 
 	// Create a new request to the backend server
-	backendRequest, err := http.NewRequest(r.Method, backendServer.Address, r.Body)
+	backendRequest, err := http.NewRequest(r.Method, backendServer, r.Body)
 	if err != nil {
 		log.Println("Error creating request to backend server:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -89,16 +90,17 @@ func processRequestFromBackend(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func decideNextServerIndex() {
-	switch Configuration.SchedulingAlgorithm {
+func (lb *LoadBalancer) decideNextServerIndex() {
+	switch lb.Configuration.SchedulingAlgorithm {
 	case AllowedSchedulingAlgorithms["round-robin"]:
-		roundRobinDecider()
+		lb.roundRobinDecider()
 	case AllowedSchedulingAlgorithms["least-connections"]:
 		// TODO: Implement least connections algorithm
 		// leastConnections()
 	}
 }
 
-func roundRobinDecider() {
-	chosenServerIndex = (chosenServerIndex + 1) % len(Configuration.BackendServers)
+func (lb *LoadBalancer) roundRobinDecider() {
+	lb.NextServerIndex = (lb.NextServerIndex + 1) % len(lb.Configuration.BackendServers)
+	lb.NextServer = lb.Configuration.BackendServers[lb.NextServerIndex]
 }
