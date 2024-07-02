@@ -1,6 +1,8 @@
 package loadbalancer
 
 import (
+	"io"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -79,47 +81,53 @@ func TestGoroutineStartsWhenStartingServer(t *testing.T) {
 	}
 }
 
-// func TestBackendServerHandlerResponse(t *testing.T) {
-// 	testCases := []struct {
-// 		name     string
-// 		port     string
-// 		expected string
-// 	}{
-// 		{
-// 			name:     "Backend server on port 8084 returns expected response",
-// 			port:     ":8084",
-// 			expected: "Hello from backend server :8084",
-// 		},
-// 		{
-// 			name:     "Backend server on port 8083 returns expected response",
-// 			port:     ":8084",
-// 			expected: "Hello from backend server :8083",
-// 		},
-// 	}
+func TestBackendServerHandlerResponse(t *testing.T) {
+	testCases := []struct {
+		name     string
+		port     string
+		expected string
+	}{
+		{
+			name:     "Backend server on port 9000 returns expected response",
+			port:     ":9000",
+			expected: "Hello from backend server :9000",
+		},
+		{
+			name:     "Backend server on port 9000 returns expected response",
+			port:     ":9001",
+			expected: "Hello from backend server :9001",
+		},
+	}
 
-// 	client := &http.Client{}
-// 	for _, tc := range testCases {
-// 		go startServer(tc.port, make(chan bool, 1))
+	client := &http.Client{}
+	for _, tc := range testCases {
+		channel := make(chan bool, 1)
+		go startServer(tc.port, channel)
+		<-channel
+		close(channel)
 
-// 		req, err := http.NewRequest("GET", "http://localhost"+tc.port, nil)
-// 		if err != nil {
-// 			t.Fatal(err)
-// 		}
-// 		resp, err := client.Do(req)
-// 		if err != nil {
-// 			t.Error(err)
-// 		}
+		url := "http://localhost" + tc.port
 
-// 		if resp.StatusCode != http.StatusOK {
-// 			t.Errorf("Expected status OK, got %v", resp.Status)
-// 		}
-// 		body, err := io.ReadAll(resp.Body)
-// 		if err != nil {
-// 			t.Error(err)
-// 		}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			t.Error(err)
+		}
 
-// 		if string(body) != "Hello from backend server :8084" {
-// 			t.Errorf("Expected body 'Hello from backend server :8084', got %v", string(body))
-// 		}
-// 	}
-// }
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("Expected status OK, got %v", resp.Status)
+		}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Error(err)
+		}
+
+		result := string(body)
+		if result != tc.expected {
+			t.Errorf("Expected %v', got %v", tc.expected, result)
+		}
+	}
+}
