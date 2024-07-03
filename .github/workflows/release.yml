@@ -12,24 +12,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Go 1.22
-      uses: actions/setup-go@v5
-      with:
-        go-version: 1.22
-      id: go
-
-    - name: Test
-      shell: bash
-      run: |
-        set -o pipefail
-        echo "# Testing the loadbalancer :rocket:" >> $GITHUB_STEP_SUMMARY
-
-        go test -v -cover >> $GITHUB_STEP_SUMMARY
+    uses: LarsNieuwenhuizen/loadbalancer/.github/workflows/test.yml@main
 
   build:
     runs-on: ubuntu-latest
