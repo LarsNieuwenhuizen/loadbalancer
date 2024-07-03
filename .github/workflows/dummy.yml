@@ -1,0 +1,20 @@
+name: Test some actions
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  decide-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/define-release-version
+        id: define-release-version
+
+      - run: echo "The release version is ${{ steps.define-release-version.outputs.release_version }}"
