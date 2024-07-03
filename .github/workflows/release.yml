@@ -53,6 +53,5 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "no-reply@email.com"
         git commit -m "release: ${{ needs.version.info.outputs.release_version }}" --allow-empty
-        git tag ${{ needs.version.info.outputs.release_version }} -m "${{ needs.version.info.outputs.release_version }}"
         git push origin main --tags
         gh release create ${{ needs.version.info.outputs.release_version }} ./bin/*.tar.gz --generate-notes
