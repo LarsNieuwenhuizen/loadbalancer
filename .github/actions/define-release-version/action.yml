@@ -3,13 +3,10 @@ description: "Define the release version based on the latest tag and the followi
 outputs:
   previous_version:
     description: "The previous version"
-    required: true
   release_version:
     description: "The release version"
-    required: true
   bump:
     description: "The bump type"
-    required: true
 runs:
   using: "node20"
   main: "dist/index.js"
