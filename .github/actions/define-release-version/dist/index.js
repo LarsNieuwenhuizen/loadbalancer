@@ -27469,12 +27469,16 @@ try {
     const info = await _modules_versioning__WEBPACK_IMPORTED_MODULE_1__/* .getVersionInfo */ .g();
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("previous_version", info.previous);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("bump", info.bumpType);
-    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("new_version", info.newVersion);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("release_version", info.newVersion);
     if (process__WEBPACK_IMPORTED_MODULE_2__.env.GITHUB_ACTIONS === "true") {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.summary.addHeading("Versioning Information :rocket:")
             .addTable([
-            [{ data: "Previous Version", header: true }, { data: "Bump Type", header: true }, { data: "New Version", header: true }],
-            [info.previous, info.bumpType, info.newVersion]
+            [
+                { data: "Previous Version", header: true },
+                { data: "Bump Type", header: true },
+                { data: "New Version", header: true },
+            ],
+            [info.previous, info.bumpType, info.newVersion],
         ])
             .write();
     }
