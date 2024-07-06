@@ -9,8 +9,8 @@ import (
 
 var (
 	AllowedSchedulingAlgorithms = map[string]string{
-		"round-robin": "round-robin",
-		// "least-connections": "least-connections", // Not implemented yet
+		"round-robin":       "round-robin",
+		"least-connections": "least-connections",
 	}
 	ErrCannotLoadYamlFile              = errors.New("cannot load yaml file")
 	ErrNoBackendServersConfigured      = errors.New("no backend servers configured to load balance")

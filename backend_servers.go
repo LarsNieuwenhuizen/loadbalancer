@@ -56,3 +56,14 @@ func startServer(serverPort string, startSignal chan<- bool) error {
 	}
 	return nil
 }
+
+func (bs *BackendServer) IncreaseActiveConnections() {
+	bs.ActiveConnections++
+}
+
+func (bs *BackendServer) DecreaseActiveConnections() {
+	bs.ActiveConnections--
+	if bs.ActiveConnections < 0 {
+		bs.ActiveConnections = 0
+	}
+}
