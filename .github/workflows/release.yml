@@ -67,7 +67,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: build-artifact
+          name: build-artifact-${{ matrix.os-arch-combinations.os }}-${{ matrix.os-arch-combinations.arch }}
           path: bin/*.tar.gz
 
   middle-step:
@@ -79,7 +79,6 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: build-artifact
           path: bin
 
       - name: Check the created tarballs
