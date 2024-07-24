@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 	Long:  `This loadbalancer passes requests to configured backend servers.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		configFlag, _ := cmd.Flags().GetString("config")
-		_, err := os.Stat("./main/config.yaml")
+		_, err := os.Stat(configFlag)
 		if errors.Is(err, fs.ErrNotExist) {
 			fmt.Println("Config file " + configFlag + " does not exist, check the path or change it with the --config flag")
 			os.Exit(1)
