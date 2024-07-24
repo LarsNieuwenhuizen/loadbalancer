@@ -69,6 +69,7 @@ jobs:
         with:
           name: build-artifact-${{ matrix.os-arch-combinations.os }}-${{ matrix.os-arch-combinations.arch }}
           path: bin/*.tar.gz
+          retention-days: 1
 
   release:
     runs-on: ubuntu-latest
