@@ -14,6 +14,9 @@ for row in $(echo "${distListJson}" | jq -r '.[] | @base64'); do
     dist=$(echo "$row" | base64 --decode | jq -r '.GOOS')
     arch=$(echo "$row" | base64 --decode | jq -r '.GOARCH')
 
+    # Replace ##VERSION## in main.go with the first argument
+    sed -i "s/##VERSION##/$1/g" cmd/root.go
+
     if [[ $dist == "linux" && $arch == a* || $dist == "darwin" && $arch == a* ]]; then
         GOOS=$dist GOARCH=$arch go build --ldflags '-extldflags "-static"' -o bin/loadbalancer main/main.go
         cd bin
