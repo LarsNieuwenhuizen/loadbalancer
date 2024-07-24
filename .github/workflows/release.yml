@@ -18,7 +18,6 @@ jobs:
 
   version:
     runs-on: ubuntu-latest
-    needs: test
     outputs:
       release_version: ${{ steps.info.outputs.release_version }}
     steps:
@@ -34,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - version
+      - test
     strategy:
       matrix:
         os-arch-combinations:
@@ -70,45 +70,32 @@ jobs:
           name: build-artifact-${{ matrix.os-arch-combinations.os }}-${{ matrix.os-arch-combinations.arch }}
           path: bin/*.tar.gz
 
-  middle-step:
+  release:
     runs-on: ubuntu-latest
+    environment: Release
     needs:
+      - version
       - build
+
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
-        with:
-          path: bin
-          merge-multiple: true
+    - uses: actions/download-artifact@v4
+      with:
+        path: bin
+        merge-multiple: true
 
-      - name: Check the created tarballs
-        shell: bash
-        run: |
-          ls -al bin
+    - name: Check the created tarballs
+      shell: bash
+      run: |
+        ls -al bin
 
-  # release:
-  #   runs-on: ubuntu-latest
-  #   environment: Release
-  #   needs:
-  #     - middle-step
-  #     - version
-  #     - build
-
-  #   steps:
-  #   - uses: actions/checkout@v4
-
-  #   - uses: actions/download-artifact@v4
-  #     with:
-  #       name: build-artifact
-  #       path: bin
-
-  #   - name: Create a release commit
-  #     env:
-  #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     run: |
-  #       git config user.name "GitHub Actions"
-  #       git config user.email "no-reply@email.com"
-  #       git commit -m "release: ${{ needs.version.outputs.release_version }}" --allow-empty
-  #       git push origin main --tags
-  #       gh release create ${{ needs.version.outputs.release_version }} ./bin/*.tar.gz --generate-notes
+    - name: Create a release commit
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "no-reply@email.com"
+        git commit -m "release: ${{ needs.version.outputs.release_version }}" --allow-empty
+        git push origin main --tags
+        gh release create ${{ needs.version.outputs.release_version }} ./bin/*.tar.gz --generate-notes
