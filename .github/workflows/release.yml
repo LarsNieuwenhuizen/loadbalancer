@@ -54,12 +54,19 @@ jobs:
       run: |
         ls -al bin
 
+    - name: Update version in file
+      shell: bash
+      run: |
+        # Overwrite the version in version file in the root of the repository
+        echo "${{ needs.version.outputs.release_version }}" > VERSION
+
     - name: Create a release commit
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config user.name "GitHub Actions"
         git config user.email "no-reply@email.com"
-        git commit -m "release: ${{ needs.version.outputs.release_version }}" --allow-empty
+        git add VERSION
+        git commit -m "release: ${{ needs.version.outputs.release_version }}"
         git push origin main --tags
         gh release create ${{ needs.version.outputs.release_version }} ./bin/*.tar.gz --generate-notes
