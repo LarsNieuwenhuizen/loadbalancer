@@ -1,8 +1,6 @@
 package loadbalancer
 
 import (
-	"flag"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -17,16 +15,6 @@ type LoadBalancer struct {
 func (lb *LoadBalancer) Start() error {
 	lb.mutex.Lock()
 	defer lb.mutex.Unlock()
-	path := flag.String("config", "", "Path to the configuration file")
-	flag.Parse()
-	if *path == "" {
-		log.Fatal("Please provide the path as a command line argument")
-	}
-
-	err := lb.ConfigureFromYaml(*path)
-	if err != nil {
-		return err
-	}
 
 	if !lb.Configuration.InProduction && lb.Configuration.StartGivenServers {
 		lb.startBackendServers()
