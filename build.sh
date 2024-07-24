@@ -15,7 +15,7 @@ for row in $(echo "${distListJson}" | jq -r '.[] | @base64'); do
     arch=$(echo "$row" | base64 --decode | jq -r '.GOARCH')
 
     if [[ $dist == "linux" && $arch == a* || $dist == "darwin" && $arch == a* ]]; then
-        GOOS=$dist GOARCH=$arch go build --ldflags '-extldflags "-static"' -o bin/loadbalancer cmd/lb.go
+        GOOS=$dist GOARCH=$arch go build --ldflags '-extldflags "-static"' -o bin/loadbalancer main/main.go
         cd bin
         tar -czvf "loadbalancer-$dist-$arch.tar.gz" loadbalancer
         rm loadbalancer
