@@ -39,11 +39,7 @@ func Execute() {
 		Short: "Print the version number of loadbalancer",
 		Long:  `All software has versions. This is loadbalancer's`,
 		Run: func(cmd *cobra.Command, args []string) {
-			versionFile, err := os.ReadFile("VERSION")
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(string(versionFile))
+			fmt.Println("##VERSION##")
 		},
 	}
 	rootCmd.AddCommand(version)
