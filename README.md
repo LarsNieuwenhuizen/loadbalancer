@@ -28,7 +28,7 @@ Download the one suited for your system, extract the tarball and run it.
 
 ## Example with the above stated config.yaml
 
-`./loadbalancer --config config.yaml`
+`./loadbalancer start --config ~/loadbalancer.yaml`
 
 - The loadbalancer will now start on port 8080
 - It will fire up the webservers as dummy backend servers because we set `startGivenServers` to true
