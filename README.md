@@ -26,7 +26,7 @@ It's currently being built for Linux and MacOS
 
 Download the one suited for your system, extract the tarball and run it.
 
-## Example with the above stated config.yaml
+## Example with the above stated loadbalancer.yaml
 
 `./loadbalancer start --config ~/loadbalancer.yaml`
 
