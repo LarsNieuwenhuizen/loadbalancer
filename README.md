@@ -2,6 +2,10 @@
 
 This is a very simple loadbalancer written in Go
 
+---
+
+A little hobby project to familiarize myself with Go
+
 ## Usage
 
 The loadbalancer simply needs a yaml config file like this:
